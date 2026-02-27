@@ -150,12 +150,18 @@ h1,h2,h3,p { margin: 0; }
 .cart-slider {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: 100%;
+  grid-auto-columns: minmax(260px, 1fr);
+  min-height: 250px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   gap: .7rem;
+  padding: .35rem;
+  border: 1px dashed rgba(130, 222, 255, 0.45);
+  border-radius: 12px;
+  background: rgba(7, 11, 18, 0.45);
   scrollbar-width: thin;
 }
+
 .cart-item {
   scroll-snap-align: start;
   border: 1px solid rgba(255,255,255,.25);
@@ -178,6 +184,16 @@ h1,h2,h3,p { margin: 0; }
 .cart-item .timer {
   color: #93e4ff;
   font-weight: 700;
+}
+
+.cart-empty {
+  margin: 0;
+  font-size: .86rem;
+  color: #a9badf;
+}
+
+.cart-empty.hidden {
+  display: none;
 }
 
 .inventory-panel {

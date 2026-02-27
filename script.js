@@ -1,8 +1,16 @@
+function makeId() {
+  if (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return `card-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 const RESERVE_MS = 10 * 60 * 1000;
 
 const startingInventory = [
   {
-    id: crypto.randomUUID(),
+    id: makeId(),
     title: "Connor McDavid Rookie",
     sport: "Hockey",
     price: 350,
@@ -11,7 +19,7 @@ const startingInventory = [
     paypal: "https://www.paypal.com/"
   },
   {
-    id: crypto.randomUUID(),
+    id: makeId(),
     title: "Patrick Mahomes Prism",
     sport: "Football",
     price: 275,
@@ -20,7 +28,7 @@ const startingInventory = [
     paypal: "https://www.paypal.com/"
   },
   {
-    id: crypto.randomUUID(),
+    id: makeId(),
     title: "Kobe Bryant Legacy",
     sport: "Basketball",
     price: 420,
@@ -36,6 +44,7 @@ const reservationTimer = document.querySelector("#reservationTimer");
 const reservationStatus = document.querySelector("#reservationStatus");
 const cartCount = document.querySelector("#cartCount");
 const cartSlider = document.querySelector("#cartSlider");
+const cartEmptyState = document.querySelector("#cartEmptyState");
 const cartPrev = document.querySelector("#cartPrev");
 const cartNext = document.querySelector("#cartNext");
 const batchCheckout = document.querySelector("#batchCheckout");
@@ -160,6 +169,7 @@ function renderInventoryList() {
 
 function renderCart() {
   cartSlider.textContent = "";
+  cartEmptyState.classList.toggle("hidden", cartItems.length > 0);
 
   cartItems.forEach((item) => {
     const cartItem = document.createElement("article");
@@ -250,7 +260,7 @@ inventoryForm.addEventListener("submit", (event) => {
   const formData = new FormData(inventoryForm);
 
   inventory.unshift({
-    id: crypto.randomUUID(),
+    id: makeId(),
     title: String(formData.get("title") || "").trim(),
     sport: String(formData.get("sport") || "").trim(),
     price: Number(formData.get("price")),
