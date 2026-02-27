@@ -1,1 +1,4 @@
 *.pub
+
+# local key-ish files
+*.pub
