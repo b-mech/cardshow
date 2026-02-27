@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CardShelf Market</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="welcome-banner">
+    <div>
+      <p class="eyebrow">Collector Marketplace</p>
+      <h1>CardShelf</h1>
+      <p class="banner-copy">A clean, modern storefront for hockey, football, basketball, and more. Click a card image to expand, then buy instantly with PayPal.</p>
+    </div>
+    <button id="openInventoryPanel" class="secondary-btn">+ Add Inventory</button>
+  </header>
+
+  <main>
+    <section class="cart-reservation" id="reservationPanel" aria-live="polite">
+      <h2>Shopping Cart Reservation</h2>
+      <p>Reserve timer: <span id="reservationTimer">10:00</span></p>
+      <p id="reservationStatus">No card reserved yet.</p>
+    </section>
+
+    <section class="card-grid" id="cardGrid" aria-label="Cards for sale"></section>
+  </main>
+
+  <aside class="inventory-panel hidden" id="inventoryPanel" aria-label="Inventory manager">
+    <h2>Inventory Studio</h2>
+    <p>List cards fast with a simple workflow inspired by marketplaces like Whatnot and eBay.</p>
+    <form id="inventoryForm">
+      <label>Title<input type="text" name="title" required placeholder="1997 Topps Chrome - Michael Jordan" /></label>
+      <label>Sport
+        <select name="sport" required>
+          <option value="Basketball">Basketball</option>
+          <option value="Football">Football</option>
+          <option value="Hockey">Hockey</option>
+          <option value="Baseball">Baseball</option>
+        </select>
+      </label>
+      <label>Price (USD)<input type="number" name="price" min="1" step="1" required placeholder="99" /></label>
+      <label>Image URL<input type="url" name="image" required placeholder="https://..." /></label>
+      <label>Description<textarea name="description" rows="4" required placeholder="Condition, grading notes, and highlights."></textarea></label>
+      <label>PayPal Checkout Link<input type="url" name="paypal" required placeholder="https://www.paypal.com/checkoutnow?token=..." /></label>
+      <div class="inventory-actions">
+        <button type="submit">Publish Card</button>
+        <button type="button" id="closeInventoryPanel" class="secondary-btn">Close</button>
+      </div>
+    </form>
+    <section class="inventory-list">
+      <h3>Current Listings</h3>
+      <ul id="inventoryList"></ul>
+    </section>
+  </aside>
+
+  <dialog id="cardModal">
+    <article>
+      <button id="closeModal" class="close-modal" aria-label="Close">✕</button>
+      <img id="modalImage" alt="Selected card" />
+      <h3 id="modalTitle"></h3>
+      <p id="modalDescription"></p>
+      <p id="modalPrice"></p>
+      <a id="paypalButton" class="paypal-btn" target="_blank" rel="noopener noreferrer">Buy with PayPal</a>
+    </article>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>
