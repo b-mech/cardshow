@@ -149,8 +149,10 @@ h1,h2,h3,p { margin: 0; }
   gap: .4rem;
 }
 .cart-slider {
-  min-height: 280px;
-  overflow-x: auto;
+  min-height: 420px;
+  max-height: 66vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: .35rem;
   border: 1px dashed rgba(130, 222, 255, 0.45);
   border-radius: 12px;
@@ -160,25 +162,24 @@ h1,h2,h3,p { margin: 0; }
 
 .cart-fan-track {
   position: relative;
-  height: 350px;
   min-width: 100%;
 }
 
 .cart-item {
-  --visible-step: 22px;
+  --visible-step: 34px;
   position: absolute;
-  left: calc(var(--index) * var(--visible-step));
-  bottom: 0;
+  left: 50%;
+  top: calc(var(--index) * var(--visible-step));
   width: 220px;
   aspect-ratio: 5 / 7; /* portrait trading-card ratio */
-  border: 1px solid rgba(255,255,255,.25);
+  border: 1px solid rgba(255,255,255,.32);
   border-radius: 12px;
   overflow: hidden;
   background: #1b2438;
   z-index: calc(var(--index) + 1);
-  transform-origin: bottom center;
-  transform: rotate(calc((var(--index) - (var(--count) - 1) / 2) * 2deg));
-  box-shadow: 0 7px 18px rgba(0,0,0,.35);
+  transform-origin: center center;
+  transform: translateX(-50%) rotate(calc((var(--index) - (var(--count) - 1) / 2) * 2deg));
+  box-shadow: 0 12px 24px rgba(0,0,0,.42);
 }
 
 .cart-item img {

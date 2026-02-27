@@ -173,8 +173,10 @@ function renderCart() {
 
   const fanTrack = document.createElement("div");
   fanTrack.className = "cart-fan-track";
-  const fanWidth = 230 + Math.max(0, cartItems.length - 1) * 23;
-  fanTrack.style.width = `${fanWidth}px`;
+  const cardHeight = 308;
+  const revealStep = 34;
+  const fanHeight = cardHeight + Math.max(0, cartItems.length - 1) * revealStep;
+  fanTrack.style.height = `${fanHeight}px`;
 
   cartItems.forEach((item, index) => {
     const cartItem = document.createElement("article");
@@ -283,11 +285,11 @@ inventoryForm.addEventListener("submit", (event) => {
 });
 
 cartPrev.addEventListener("click", () => {
-  cartSlider.scrollBy({ left: -cartSlider.clientWidth, behavior: "smooth" });
+  cartSlider.scrollBy({ top: -Math.max(120, cartSlider.clientHeight * 0.65), behavior: "smooth" });
 });
 
 cartNext.addEventListener("click", () => {
-  cartSlider.scrollBy({ left: cartSlider.clientWidth, behavior: "smooth" });
+  cartSlider.scrollBy({ top: Math.max(120, cartSlider.clientHeight * 0.65), behavior: "smooth" });
 });
 
 batchCheckout.addEventListener("click", () => {
