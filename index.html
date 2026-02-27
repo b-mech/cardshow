@@ -16,14 +16,30 @@
     <button id="openInventoryPanel" class="secondary-btn">+ Add Inventory</button>
   </header>
 
-  <main>
-    <section class="cart-reservation" id="reservationPanel" aria-live="polite">
-      <h2>Shopping Cart Reservation</h2>
-      <p>Reserve timer: <span id="reservationTimer">10:00</span></p>
-      <p id="reservationStatus">No card reserved yet.</p>
+  <main class="main-layout">
+    <section class="catalog-column">
+      <section class="cart-reservation" id="reservationPanel" aria-live="polite">
+        <h2>Shopping Cart Reservation</h2>
+        <p>Default reserve timer: <span id="reservationTimer">10:00</span></p>
+        <p id="reservationStatus">No card reserved yet.</p>
+      </section>
+
+      <section class="card-grid" id="cardGrid" aria-label="Cards for sale"></section>
     </section>
 
-    <section class="card-grid" id="cardGrid" aria-label="Cards for sale"></section>
+    <aside class="cart-sidebar" aria-label="Selected cards cart">
+      <div class="cart-head">
+        <h2>Your Cart</h2>
+        <span id="cartCount">0 cards</span>
+      </div>
+      <p class="cart-tip">Slide through reserved cards and checkout in one batch before individual timers expire.</p>
+      <div class="cart-controls">
+        <button id="cartPrev" class="secondary-btn" type="button">◀</button>
+        <button id="cartNext" class="secondary-btn" type="button">▶</button>
+      </div>
+      <section id="cartSlider" class="cart-slider" aria-live="polite"></section>
+      <button id="batchCheckout" class="paypal-btn" type="button">Purchase Batch with PayPal</button>
+    </aside>
   </main>
 
   <aside class="inventory-panel hidden" id="inventoryPanel" aria-label="Inventory manager">

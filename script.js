@@ -1,5 +1,8 @@
+const RESERVE_MS = 10 * 60 * 1000;
+
 const startingInventory = [
   {
+    id: crypto.randomUUID(),
     title: "Connor McDavid Rookie",
     sport: "Hockey",
     price: 350,
@@ -8,6 +11,7 @@ const startingInventory = [
     paypal: "https://www.paypal.com/"
   },
   {
+    id: crypto.randomUUID(),
     title: "Patrick Mahomes Prism",
     sport: "Football",
     price: 275,
@@ -16,6 +20,7 @@ const startingInventory = [
     paypal: "https://www.paypal.com/"
   },
   {
+    id: crypto.randomUUID(),
     title: "Kobe Bryant Legacy",
     sport: "Basketball",
     price: 420,
@@ -29,6 +34,11 @@ const cardGrid = document.querySelector("#cardGrid");
 const inventoryList = document.querySelector("#inventoryList");
 const reservationTimer = document.querySelector("#reservationTimer");
 const reservationStatus = document.querySelector("#reservationStatus");
+const cartCount = document.querySelector("#cartCount");
+const cartSlider = document.querySelector("#cartSlider");
+const cartPrev = document.querySelector("#cartPrev");
+const cartNext = document.querySelector("#cartNext");
+const batchCheckout = document.querySelector("#batchCheckout");
 const modal = document.querySelector("#cardModal");
 const modalImage = document.querySelector("#modalImage");
 const modalTitle = document.querySelector("#modalTitle");
@@ -42,7 +52,7 @@ const closeInventoryPanel = document.querySelector("#closeInventoryPanel");
 const inventoryForm = document.querySelector("#inventoryForm");
 
 let inventory = [...startingInventory];
-let reserveEndsAt = null;
+let cartItems = [];
 let selectedCardTitle = null;
 let lastClick = { id: null, time: 0 };
 
@@ -57,10 +67,13 @@ function formatTime(ms) {
   return `${minutes}:${seconds}`;
 }
 
-function startReservation(title) {
-  selectedCardTitle = title;
-  reserveEndsAt = Date.now() + 10 * 60 * 1000;
-  reservationStatus.textContent = `${title} reserved for checkout.`;
+function getLeadTimer() {
+  if (cartItems.length === 0) {
+    return "10:00";
+  }
+
+  const lead = Math.max(...cartItems.map((item) => item.expiresAt));
+  return formatTime(lead - Date.now());
 }
 
 function clearCommittedState() {
@@ -68,21 +81,36 @@ function clearCommittedState() {
   cardGrid.querySelectorAll(".card").forEach((card) => card.classList.remove("selected"));
 }
 
-function updateTimer() {
-  if (!reserveEndsAt) {
-    reservationTimer.textContent = "10:00";
-    return;
+function reserveCard(card) {
+  selectedCardTitle = card.title;
+  reservationStatus.textContent = `${card.title} added to cart reserve.`;
+
+  const existing = cartItems.find((item) => item.id === card.id);
+  if (existing) {
+    existing.expiresAt = Date.now() + RESERVE_MS;
+  } else {
+    cartItems.push({ ...card, expiresAt: Date.now() + RESERVE_MS });
   }
 
-  const remaining = reserveEndsAt - Date.now();
-  reservationTimer.textContent = formatTime(remaining);
+  renderCart();
+}
 
-  if (remaining <= 0) {
-    reservationStatus.textContent = `${selectedCardTitle} went back on the shelf.`;
-    reserveEndsAt = null;
+function updateTimers() {
+  cartItems = cartItems.filter((item) => item.expiresAt > Date.now());
+  reservationTimer.textContent = getLeadTimer();
+
+  if (cartItems.length === 0) {
+    reservationStatus.textContent = selectedCardTitle ? `${selectedCardTitle} went back on the shelf.` : "No card reserved yet.";
     selectedCardTitle = null;
     clearCommittedState();
   }
+
+  cartSlider.querySelectorAll(".cart-item").forEach((node) => {
+    const expiresAt = Number(node.dataset.expiresAt);
+    node.querySelector(".timer").textContent = formatTime(expiresAt - Date.now());
+  });
+
+  cartCount.textContent = `${cartItems.length} card${cartItems.length === 1 ? "" : "s"}`;
 }
 
 function showCardModal(card) {
@@ -98,7 +126,7 @@ function commitCardSelection(cardElement, card) {
   clearCommittedState();
   cardGrid.classList.add("committing");
   cardElement.classList.add("selected");
-  startReservation(card.title);
+  reserveCard(card);
 }
 
 function createText(tag, text) {
@@ -110,7 +138,7 @@ function createText(tag, text) {
 function addCardClickCommit(cardElement, card) {
   cardElement.addEventListener("click", () => {
     const now = Date.now();
-    const id = card.title;
+    const id = card.id;
     const isSecondClick = lastClick.id === id && now - lastClick.time <= 700;
 
     lastClick = { id, time: now };
@@ -128,6 +156,30 @@ function renderInventoryList() {
     item.textContent = `${card.title} • ${card.sport} • ${formatMoney(card.price)}`;
     inventoryList.appendChild(item);
   });
+}
+
+function renderCart() {
+  cartSlider.textContent = "";
+
+  cartItems.forEach((item) => {
+    const cartItem = document.createElement("article");
+    cartItem.className = "cart-item";
+    cartItem.dataset.expiresAt = String(item.expiresAt);
+
+    const img = document.createElement("img");
+    img.src = item.image;
+    img.alt = item.title;
+
+    const title = createText("p", `${item.title} · ${item.sport}`);
+    const price = createText("p", formatMoney(item.price));
+    const timer = createText("p", formatTime(item.expiresAt - Date.now()));
+    timer.className = "timer";
+
+    cartItem.append(img, title, price, timer);
+    cartSlider.appendChild(cartItem);
+  });
+
+  updateTimers();
 }
 
 function renderCards() {
@@ -174,13 +226,13 @@ function renderCards() {
 
     reserveButton.addEventListener("click", (event) => {
       event.stopPropagation();
-      startReservation(card.title);
+      reserveCard(card);
       clearCommittedState();
     });
 
     quickPay.addEventListener("click", (event) => {
       event.stopPropagation();
-      startReservation(card.title);
+      reserveCard(card);
     });
 
     addCardClickCommit(cardElement, card);
@@ -198,6 +250,7 @@ inventoryForm.addEventListener("submit", (event) => {
   const formData = new FormData(inventoryForm);
 
   inventory.unshift({
+    id: crypto.randomUUID(),
     title: String(formData.get("title") || "").trim(),
     sport: String(formData.get("sport") || "").trim(),
     price: Number(formData.get("price")),
@@ -209,6 +262,30 @@ inventoryForm.addEventListener("submit", (event) => {
   inventoryForm.reset();
   inventoryPanel.classList.add("hidden");
   renderCards();
+});
+
+cartPrev.addEventListener("click", () => {
+  cartSlider.scrollBy({ left: -cartSlider.clientWidth, behavior: "smooth" });
+});
+
+cartNext.addEventListener("click", () => {
+  cartSlider.scrollBy({ left: cartSlider.clientWidth, behavior: "smooth" });
+});
+
+batchCheckout.addEventListener("click", () => {
+  if (cartItems.length === 0) {
+    reservationStatus.textContent = "Add cards to the cart before batch checkout.";
+    return;
+  }
+
+  cartItems.forEach((item) => {
+    window.open(item.paypal, "_blank", "noopener,noreferrer");
+  });
+
+  reservationStatus.textContent = `Opened ${cartItems.length} PayPal checkout tab(s).`;
+  cartItems = [];
+  clearCommittedState();
+  renderCart();
 });
 
 closeModal.addEventListener("click", () => modal.close());
@@ -226,5 +303,6 @@ modal.addEventListener("click", (event) => {
 });
 
 renderCards();
-updateTimer();
-setInterval(updateTimer, 250);
+renderCart();
+updateTimers();
+setInterval(updateTimers, 250);
