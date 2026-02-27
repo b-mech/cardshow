@@ -38,27 +38,27 @@ const startingInventory = [
   }
 ];
 
-const cardGrid = document.querySelector("#cardGrid");
-const inventoryList = document.querySelector("#inventoryList");
-const reservationTimer = document.querySelector("#reservationTimer");
-const reservationStatus = document.querySelector("#reservationStatus");
-const cartCount = document.querySelector("#cartCount");
-const cartSlider = document.querySelector("#cartSlider");
-const cartEmptyState = document.querySelector("#cartEmptyState");
-const cartPrev = document.querySelector("#cartPrev");
-const cartNext = document.querySelector("#cartNext");
-const batchCheckout = document.querySelector("#batchCheckout");
-const modal = document.querySelector("#cardModal");
-const modalImage = document.querySelector("#modalImage");
-const modalTitle = document.querySelector("#modalTitle");
-const modalDescription = document.querySelector("#modalDescription");
-const modalPrice = document.querySelector("#modalPrice");
-const paypalButton = document.querySelector("#paypalButton");
-const closeModal = document.querySelector("#closeModal");
-const inventoryPanel = document.querySelector("#inventoryPanel");
-const openInventoryPanel = document.querySelector("#openInventoryPanel");
-const closeInventoryPanel = document.querySelector("#closeInventoryPanel");
-const inventoryForm = document.querySelector("#inventoryForm");
+let cardGrid;
+let inventoryList;
+let reservationTimer;
+let reservationStatus;
+let cartCount;
+let cartSlider;
+let cartEmptyState;
+let cartPrev;
+let cartNext;
+let batchCheckout;
+let modal;
+let modalImage;
+let modalTitle;
+let modalDescription;
+let modalPrice;
+let paypalButton;
+let closeModal;
+let inventoryPanel;
+let openInventoryPanel;
+let closeInventoryPanel;
+let inventoryForm;
 
 let inventory = [...startingInventory];
 let cartItems = [];
@@ -252,67 +252,118 @@ function renderCards() {
   renderInventoryList();
 }
 
-openInventoryPanel.addEventListener("click", () => inventoryPanel.classList.remove("hidden"));
-closeInventoryPanel.addEventListener("click", () => inventoryPanel.classList.add("hidden"));
+document.addEventListener("DOMContentLoaded", () => {
+  cardGrid = document.querySelector("#cardGrid");
+  inventoryList = document.querySelector("#inventoryList");
+  reservationTimer = document.querySelector("#reservationTimer");
+  reservationStatus = document.querySelector("#reservationStatus");
+  cartCount = document.querySelector("#cartCount");
+  cartSlider = document.querySelector("#cartSlider");
+  cartEmptyState = document.querySelector("#cartEmptyState");
+  cartPrev = document.querySelector("#cartPrev");
+  cartNext = document.querySelector("#cartNext");
+  batchCheckout = document.querySelector("#batchCheckout");
+  modal = document.querySelector("#cardModal");
+  modalImage = document.querySelector("#modalImage");
+  modalTitle = document.querySelector("#modalTitle");
+  modalDescription = document.querySelector("#modalDescription");
+  modalPrice = document.querySelector("#modalPrice");
+  paypalButton = document.querySelector("#paypalButton");
+  closeModal = document.querySelector("#closeModal");
+  inventoryPanel = document.querySelector("#inventoryPanel");
+  openInventoryPanel = document.querySelector("#openInventoryPanel");
+  closeInventoryPanel = document.querySelector("#closeInventoryPanel");
+  inventoryForm = document.querySelector("#inventoryForm");
 
-inventoryForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const formData = new FormData(inventoryForm);
+  const missing = [];
+  if (!cardGrid) missing.push("#cardGrid");
+  if (!inventoryList) missing.push("#inventoryList");
+  if (!reservationTimer) missing.push("#reservationTimer");
+  if (!reservationStatus) missing.push("#reservationStatus");
+  if (!cartCount) missing.push("#cartCount");
+  if (!cartSlider) missing.push("#cartSlider");
+  if (!cartEmptyState) missing.push("#cartEmptyState");
+  if (!cartPrev) missing.push("#cartPrev");
+  if (!cartNext) missing.push("#cartNext");
+  if (!batchCheckout) missing.push("#batchCheckout");
+  if (!modal) missing.push("#cardModal");
+  if (!modalImage) missing.push("#modalImage");
+  if (!modalTitle) missing.push("#modalTitle");
+  if (!modalDescription) missing.push("#modalDescription");
+  if (!modalPrice) missing.push("#modalPrice");
+  if (!paypalButton) missing.push("#paypalButton");
+  if (!closeModal) missing.push("#closeModal");
+  if (!inventoryPanel) missing.push("#inventoryPanel");
+  if (!openInventoryPanel) missing.push("#openInventoryPanel");
+  if (!closeInventoryPanel) missing.push("#closeInventoryPanel");
+  if (!inventoryForm) missing.push("#inventoryForm");
 
-  inventory.unshift({
-    id: makeId(),
-    title: String(formData.get("title") || "").trim(),
-    sport: String(formData.get("sport") || "").trim(),
-    price: Number(formData.get("price")),
-    image: String(formData.get("image") || "").trim(),
-    description: String(formData.get("description") || "").trim(),
-    paypal: String(formData.get("paypal") || "").trim()
+  if (missing.length) {
+    throw new Error("Missing required DOM elements: " + missing.join(", "));
+  }
+
+  openInventoryPanel.addEventListener("click", () => inventoryPanel.classList.remove("hidden"));
+  closeInventoryPanel.addEventListener("click", () => inventoryPanel.classList.add("hidden"));
+
+  inventoryForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const formData = new FormData(inventoryForm);
+
+    inventory.unshift({
+      id: makeId(),
+      title: String(formData.get("title") || "").trim(),
+      sport: String(formData.get("sport") || "").trim(),
+      price: Number(formData.get("price")),
+      image: String(formData.get("image") || "").trim(),
+      description: String(formData.get("description") || "").trim(),
+      paypal: String(formData.get("paypal") || "").trim()
+    });
+
+    inventoryForm.reset();
+    inventoryPanel.classList.add("hidden");
+    renderCards();
   });
 
-  inventoryForm.reset();
-  inventoryPanel.classList.add("hidden");
+  cartPrev.addEventListener("click", () => {
+    cartSlider.scrollBy({ left: -cartSlider.clientWidth, behavior: "smooth" });
+  });
+
+  cartNext.addEventListener("click", () => {
+    cartSlider.scrollBy({ left: cartSlider.clientWidth, behavior: "smooth" });
+  });
+
+  batchCheckout.addEventListener("click", () => {
+    if (cartItems.length === 0) {
+      reservationStatus.textContent = "Add cards to the cart before batch checkout.";
+      return;
+    }
+
+    cartItems.forEach((item) => {
+      window.open(item.paypal, "_blank", "noopener,noreferrer");
+    });
+
+    reservationStatus.textContent = `Opened ${cartItems.length} PayPal checkout tab(s).`;
+    cartItems = [];
+    clearCommittedState();
+    renderCart();
+  });
+
+  closeModal.addEventListener("click", () => modal.close());
+  modal.addEventListener("click", (event) => {
+    const bounds = modal.getBoundingClientRect();
+    const clickedInDialog =
+      event.clientX >= bounds.left &&
+      event.clientX <= bounds.right &&
+      event.clientY >= bounds.top &&
+      event.clientY <= bounds.bottom;
+
+    if (!clickedInDialog) {
+      modal.close();
+    }
+  });
+
   renderCards();
-});
-
-cartPrev.addEventListener("click", () => {
-  cartSlider.scrollBy({ left: -cartSlider.clientWidth, behavior: "smooth" });
-});
-
-cartNext.addEventListener("click", () => {
-  cartSlider.scrollBy({ left: cartSlider.clientWidth, behavior: "smooth" });
-});
-
-batchCheckout.addEventListener("click", () => {
-  if (cartItems.length === 0) {
-    reservationStatus.textContent = "Add cards to the cart before batch checkout.";
-    return;
-  }
-
-  cartItems.forEach((item) => {
-    window.open(item.paypal, "_blank", "noopener,noreferrer");
-  });
-
-  reservationStatus.textContent = `Opened ${cartItems.length} PayPal checkout tab(s).`;
-  cartItems = [];
-  clearCommittedState();
   renderCart();
+  updateTimers();
+  setInterval(updateTimers, 1000);
 });
-
-closeModal.addEventListener("click", () => modal.close());
-modal.addEventListener("click", (event) => {
-  const bounds = modal.getBoundingClientRect();
-  const clickedInDialog =
-    event.clientX >= bounds.left &&
-    event.clientX <= bounds.right &&
-    event.clientY >= bounds.top &&
-    event.clientY <= bounds.bottom;
-
-  if (!clickedInDialog) {
-    modal.close();
-  }
-});
-
-renderCards();
-renderCart();
-updateTimers();
-setInterval(updateTimers, 250);
